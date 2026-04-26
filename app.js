@@ -1,4 +1,4 @@
-const STORAGE_KEY = "spaargids-state-v1";
+const STORAGE_KEY = "budgy-state-v1";
 
 const state = loadState();
 
