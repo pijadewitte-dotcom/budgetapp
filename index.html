@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spaargids</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Work+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <div class="hero__copy">
+        <p class="eyebrow">Maandbudget in 1 overzicht</p>
+        <h1>Spaargids</h1>
+        <p class="hero__lead">
+          Geef je loon, je huidige saldo en je uitgaven in. De app toont meteen hoeveel je uitgeeft,
+          wat je ongeveer spaart en waar je waarschijnlijk kunt bijsturen.
+        </p>
+      </div>
+      <div class="hero__card">
+        <p class="hero__label">Snelle blik</p>
+        <div class="hero__stat">
+          <span id="heroSavings">EUR 0</span>
+          <small>geschat spaarsaldo deze maand</small>
+        </div>
+        <div class="hero__stat">
+          <span id="heroSpendRate">0%</span>
+          <small>van je loon gaat naar uitgaven</small>
+        </div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel panel--form">
+        <div class="panel__header">
+          <h2>Jouw maand</h2>
+          <p>Alles wordt automatisch bewaard op dit toestel.</p>
+        </div>
+
+        <form id="profileForm" class="stack">
+          <label>
+            <span>Maandelijks nettoloon</span>
+            <input id="salaryInput" name="salary" type="number" min="0" step="0.01" placeholder="bv. 2500">
+          </label>
+          <label>
+            <span>Huidig saldo op je rekening</span>
+            <input id="balanceInput" name="balance" type="number" step="0.01" placeholder="bv. 1800">
+          </label>
+        </form>
+
+        <div class="panel__header panel__header--sub">
+          <h3>Uitgave toevoegen</h3>
+          <p>Hou je maand levend door elke kost snel in te geven.</p>
+        </div>
+
+        <form id="expenseForm" class="stack">
+          <label>
+            <span>Omschrijving</span>
+            <input id="expenseName" name="name" type="text" maxlength="60" placeholder="bv. Boodschappen Colruyt" required>
+          </label>
+          <label>
+            <span>Categorie</span>
+            <select id="expenseCategory" name="category">
+              <option value="Wonen">Wonen</option>
+              <option value="Boodschappen">Boodschappen</option>
+              <option value="Vervoer">Vervoer</option>
+              <option value="Vrije tijd">Vrije tijd</option>
+              <option value="Abonnementen">Abonnementen</option>
+              <option value="Gezondheid">Gezondheid</option>
+              <option value="Overig">Overig</option>
+            </select>
+          </label>
+          <label>
+            <span>Bedrag</span>
+            <input id="expenseAmount" name="amount" type="number" min="0" step="0.01" placeholder="bv. 54.90" required>
+          </label>
+          <label>
+            <span>Datum</span>
+            <input id="expenseDate" name="date" type="date" required>
+          </label>
+          <button type="submit" class="button button--primary">Uitgave opslaan</button>
+        </form>
+      </section>
+
+      <section class="panel panel--results">
+        <div class="panel__header">
+          <h2>Overzicht</h2>
+          <p>Een heldere kijk op je maandelijkse geldstroom.</p>
+        </div>
+
+        <div class="summary-grid">
+          <article class="summary-card">
+            <p>Totaal uitgegeven</p>
+            <strong id="totalSpent">EUR 0</strong>
+          </article>
+          <article class="summary-card">
+            <p>Geschat gespaard</p>
+            <strong id="estimatedSaved">EUR 0</strong>
+          </article>
+          <article class="summary-card">
+            <p>Vrij besteedbaar</p>
+            <strong id="remainingBudget">EUR 0</strong>
+          </article>
+          <article class="summary-card">
+            <p>Status rekening</p>
+            <strong id="balanceStatus">EUR 0</strong>
+          </article>
+        </div>
+
+        <div class="insights">
+          <article class="insight-card">
+            <h3>Maandscore</h3>
+            <p id="monthlyHealth">Voer je gegevens in om je budgetgezondheid te zien.</p>
+          </article>
+          <article class="insight-card">
+            <h3>Beste suggestie</h3>
+            <p id="topSuggestion">Nog geen suggestie. Voeg eerst je loon en een paar uitgaven toe.</p>
+          </article>
+        </div>
+
+        <div class="panel__header panel__header--sub">
+          <h3>Uitgavenlijst</h3>
+          <p>Je recentste kosten verschijnen bovenaan.</p>
+        </div>
+
+        <div id="expenseList" class="expense-list empty-state">
+          Nog geen uitgaven toegevoegd.
+        </div>
+
+        <div class="panel__header panel__header--sub">
+          <h3>Categorieverdeling</h3>
+          <p>Zo zie je meteen waar je geld het hardst wegloopt.</p>
+        </div>
+
+        <div id="categoryBreakdown" class="category-breakdown empty-state">
+          Nog geen categoriegegevens beschikbaar.
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <template id="expenseItemTemplate">
+    <article class="expense-item">
+      <div>
+        <strong class="expense-item__name"></strong>
+        <p class="expense-item__meta"></p>
+      </div>
+      <div class="expense-item__side">
+        <span class="expense-item__amount"></span>
+        <button type="button" class="button button--ghost expense-item__delete">Verwijder</button>
+      </div>
+    </article>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
