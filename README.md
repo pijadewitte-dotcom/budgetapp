@@ -1,4 +1,4 @@
-# Spaargids
+# Budgy
 
 Een eenvoudige budget-app waarin je:
 
