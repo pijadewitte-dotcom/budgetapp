@@ -98,7 +98,7 @@ function render() {
 function calculateTotals() {
   const totalSpent = state.expenses.reduce((sum, expense) => sum + expense.amount, 0);
   const remainingBudget = state.salary - totalSpent;
-  const estimatedSaved = state.balance > 0 ? state.balance - totalSpent : remainingBudget;
+  const estimatedSaved = remainingBudget;
   const spendRate = state.salary > 0 ? (totalSpent / state.salary) * 100 : 0;
   const categoryTotals = state.expenses.reduce((acc, expense) => {
     acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
@@ -116,6 +116,10 @@ function calculateTotals() {
     } else {
       healthText = "Je uitgaven liggen boven je loon. Tijd om snel bij te sturen.";
     }
+  }
+
+  if (state.balance < 0) {
+    healthText = "Je rekening staat in het rood. Focus eerst op uitgaven pauzeren tot je buffer weer positief is.";
   }
 
   return {
