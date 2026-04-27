@@ -5,6 +5,10 @@ const state = loadState();
 const els = {
   salaryInput: document.getElementById("salaryInput"),
   balanceInput: document.getElementById("balanceInput"),
+  snapshotForm: document.getElementById("snapshotForm"),
+  snapshotMonth: document.getElementById("snapshotMonth"),
+  snapshotBalance: document.getElementById("snapshotBalance"),
+  snapshotNote: document.getElementById("snapshotNote"),
   expenseForm: document.getElementById("expenseForm"),
   expenseName: document.getElementById("expenseName"),
   expenseCategory: document.getElementById("expenseCategory"),
@@ -20,19 +24,24 @@ const els = {
   topSuggestion: document.getElementById("topSuggestion"),
   expenseList: document.getElementById("expenseList"),
   categoryBreakdown: document.getElementById("categoryBreakdown"),
+  snapshotList: document.getElementById("snapshotList"),
   expenseItemTemplate: document.getElementById("expenseItemTemplate"),
+  snapshotItemTemplate: document.getElementById("snapshotItemTemplate"),
 };
 
 init();
 
 function init() {
   const today = new Date().toISOString().split("T")[0];
+  const currentMonth = today.slice(0, 7);
   els.expenseDate.value = state.expenses[0]?.date || today;
+  els.snapshotMonth.value = currentMonth;
   els.salaryInput.value = state.salary || "";
   els.balanceInput.value = state.balance || "";
 
   els.salaryInput.addEventListener("input", handleProfileChange);
   els.balanceInput.addEventListener("input", handleProfileChange);
+  els.snapshotForm.addEventListener("submit", handleSnapshotSubmit);
   els.expenseForm.addEventListener("submit", handleExpenseSubmit);
 
   render();
@@ -71,8 +80,46 @@ function handleExpenseSubmit(event) {
   els.expenseDate.value = new Date().toISOString().split("T")[0];
 }
 
+function handleSnapshotSubmit(event) {
+  event.preventDefault();
+
+  const month = els.snapshotMonth.value;
+  const balance = toNumber(els.snapshotBalance.value);
+  const note = els.snapshotNote.value.trim();
+
+  if (!month) {
+    return;
+  }
+
+  const existingSnapshot = state.snapshots.find((snapshot) => snapshot.month === month);
+
+  if (existingSnapshot) {
+    existingSnapshot.balance = balance;
+    existingSnapshot.note = note;
+  } else {
+    state.snapshots.unshift({
+      id: crypto.randomUUID(),
+      month,
+      balance,
+      note,
+    });
+  }
+
+  state.snapshots.sort((a, b) => b.month.localeCompare(a.month));
+  saveState();
+  render();
+  els.snapshotForm.reset();
+  els.snapshotMonth.value = new Date().toISOString().slice(0, 7);
+}
+
 function removeExpense(id) {
   state.expenses = state.expenses.filter((expense) => expense.id !== id);
+  saveState();
+  render();
+}
+
+function removeSnapshot(id) {
+  state.snapshots = state.snapshots.filter((snapshot) => snapshot.id !== id);
   saveState();
   render();
 }
@@ -84,7 +131,7 @@ function render() {
   els.totalSpent.textContent = formatCurrency(totals.totalSpent);
   els.estimatedSaved.textContent = formatCurrency(totals.estimatedSaved);
   els.remainingBudget.textContent = formatCurrency(totals.remainingBudget);
-  els.balanceStatus.textContent = formatCurrency(state.balance);
+  els.balanceStatus.textContent = formatCurrency(totals.latestTrackedBalance ?? state.balance);
   els.heroSavings.textContent = formatCurrency(totals.estimatedSaved);
   els.heroSpendRate.textContent = `${Math.round(totals.spendRate)}%`;
   els.monthlyHealth.textContent = totals.healthText;
@@ -93,6 +140,7 @@ function render() {
 
   renderExpenses();
   renderCategories(totals.categoryTotals, totals.totalSpent);
+  renderSnapshots();
 }
 
 function calculateTotals() {
@@ -104,6 +152,7 @@ function calculateTotals() {
     acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
     return acc;
   }, {});
+  const monthlySnapshots = buildMonthlySnapshots();
 
   let healthText = "Voeg je loon in om je maandscore correct te berekenen.";
   if (state.salary > 0) {
@@ -129,6 +178,8 @@ function calculateTotals() {
     spendRate,
     healthText,
     categoryTotals,
+    monthlySnapshots,
+    latestTrackedBalance: monthlySnapshots[0]?.endingBalance,
   };
 }
 
@@ -216,12 +267,14 @@ function loadState() {
       salary: saved?.salary || 0,
       balance: saved?.balance || 0,
       expenses: Array.isArray(saved?.expenses) ? saved.expenses : [],
+      snapshots: Array.isArray(saved?.snapshots) ? saved.snapshots : [],
     };
   } catch {
     return {
       salary: 0,
       balance: 0,
       expenses: [],
+      snapshots: [],
     };
   }
 }
@@ -250,4 +303,53 @@ function formatDate(value) {
     month: "short",
     year: "numeric",
   }).format(date);
+}
+
+function renderSnapshots() {
+  const monthlySnapshots = buildMonthlySnapshots();
+
+  if (monthlySnapshots.length === 0) {
+    els.snapshotList.className = "expense-list empty-state";
+    els.snapshotList.textContent = "Nog geen maandelijkse rekeningstatus opgeslagen.";
+    return;
+  }
+
+  els.snapshotList.className = "expense-list";
+  els.snapshotList.textContent = "";
+
+  monthlySnapshots.forEach((snapshot) => {
+    const node = els.snapshotItemTemplate.content.firstElementChild.cloneNode(true);
+    node.querySelector(".snapshot-item__month").textContent = formatMonth(snapshot.month);
+    node.querySelector(".snapshot-item__meta").textContent =
+      `Startsaldo ${formatCurrency(snapshot.startBalance)} - kosten ${formatCurrency(snapshot.expenseTotal)} - eindstand ${formatCurrency(snapshot.endingBalance)}${snapshot.note ? ` - ${snapshot.note}` : ""}`;
+    node.querySelector(".snapshot-item__amount").textContent = formatCurrency(snapshot.endingBalance);
+    node.querySelector(".snapshot-item__delete").addEventListener("click", () => removeSnapshot(snapshot.id));
+    els.snapshotList.appendChild(node);
+  });
+}
+
+function formatMonth(value) {
+  const [year, month] = value.split("-");
+  const date = new Date(Number(year), Number(month) - 1, 1);
+  return new Intl.DateTimeFormat("nl-BE", {
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
+function buildMonthlySnapshots() {
+  return [...state.snapshots]
+    .sort((a, b) => b.month.localeCompare(a.month))
+    .map((snapshot) => {
+      const expenseTotal = state.expenses
+        .filter((expense) => expense.date.startsWith(snapshot.month))
+        .reduce((sum, expense) => sum + expense.amount, 0);
+
+      return {
+        ...snapshot,
+        startBalance: snapshot.balance,
+        expenseTotal,
+        endingBalance: snapshot.balance - expenseTotal,
+      };
+    });
 }
