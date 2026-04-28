@@ -2,11 +2,12 @@
 
 Een eenvoudige budget-app waarin je:
 
-- je maandelijks nettoloon kunt invullen
-- je huidige rekeningstand kunt bewaren
-- maandelijkse rekeningstatussen kunt opslaan
-- uitgaven per categorie kunt toevoegen
-- meteen ziet hoeveel je uitgeeft en ongeveer spaart
+- per maand zoals januari je loon kunt opslaan
+- per maand de status van je rekening kunt bewaren
+- inkomsten en uitgaven met naam en categorie kunt toevoegen
+- een uitgebreid keuzemenu voor soorten kosten en inkomsten hebt
+- meteen je maandelijkse eindstand van je rekening ziet
+- via grafieken je rekeningstand, uitgaven en spaarruimte per maand volgt
 - automatische suggesties krijgt om je budget bij te sturen
 
 ## Gebruik
