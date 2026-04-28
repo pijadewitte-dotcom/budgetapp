@@ -6,29 +6,38 @@
   <title>Budgy</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Work+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="page-shell">
     <header class="hero">
       <div class="hero__copy">
-        <p class="eyebrow">Maandbudget in 1 overzicht</p>
+        <p class="eyebrow">Slim maandoverzicht</p>
         <h1>Budgy</h1>
         <p class="hero__lead">
-          Geef je loon, je huidige saldo en je uitgaven in. De app toont meteen hoeveel je uitgeeft,
-          wat je ongeveer spaart en waar je waarschijnlijk kunt bijsturen.
+          Sla per maand je loon en beginsaldo op, voeg daarna al je inkomsten en uitgaven toe,
+          en volg meteen via grafieken hoe je rekening beweegt, wat er afgaat en wat je overhoudt.
         </p>
+        <div class="hero__chips">
+          <span class="chip">Maand per maand</span>
+          <span class="chip">Grafieken inbegrepen</span>
+          <span class="chip">Uitgebreide categorieen</span>
+        </div>
       </div>
       <div class="hero__card">
-        <p class="hero__label">Snelle blik</p>
+        <p class="hero__label">Actieve maand</p>
         <div class="hero__stat">
-          <span id="heroSavings">EUR 0</span>
-          <small>geschat spaarsaldo deze maand</small>
+          <span id="heroMonth">Geen maand</span>
+          <small>maand die je nu bekijkt</small>
         </div>
         <div class="hero__stat">
-          <span id="heroSpendRate">0%</span>
-          <small>van je loon gaat naar uitgaven</small>
+          <span id="heroBalance">EUR 0</span>
+          <small>eindstand van je rekening in die maand</small>
+        </div>
+        <div class="hero__stat">
+          <span id="heroSavings">EUR 0</span>
+          <small>geschat bedrag dat je die maand overhoudt</small>
         </div>
       </div>
     </header>
@@ -36,166 +45,209 @@
     <main class="layout">
       <section class="panel panel--form">
         <div class="panel__header">
-          <h2>Jouw maand</h2>
-          <p>Alles wordt automatisch bewaard op dit toestel.</p>
+          <h2>Maand instellen</h2>
+          <p>Kies bijvoorbeeld januari en bewaar voor die maand je loon en beginsaldo.</p>
         </div>
 
-        <form id="profileForm" class="stack">
-          <label>
-            <span>Maandelijks nettoloon</span>
-            <input id="salaryInput" name="salary" type="number" min="0" step="0.01" placeholder="bv. 2500">
-          </label>
-          <label>
-            <span>Huidig saldo op je rekening</span>
-            <input id="balanceInput" name="balance" type="number" step="0.01" placeholder="bv. 1800">
-          </label>
-        </form>
-
-        <div class="panel__header panel__header--sub">
-          <h3>Maandelijkse rekeningstatus</h3>
-          <p>Bewaar per maand een snapshot van je rekening om je evolutie te volgen.</p>
-        </div>
-
-        <form id="snapshotForm" class="stack">
+        <form id="monthForm" class="stack">
           <label>
             <span>Maand</span>
-            <input id="snapshotMonth" name="month" type="month" required>
+            <input id="selectedMonth" name="month" type="month" required>
           </label>
           <label>
-            <span>Saldo op dat moment</span>
-            <input id="snapshotBalance" name="snapshotBalance" type="number" step="0.01" placeholder="bv. 1950" required>
+            <span>Loon van die maand</span>
+            <input id="salaryInput" name="salary" type="number" min="0" step="0.01" placeholder="bv. 2500" required>
           </label>
           <label>
-            <span>Korte notitie</span>
-            <input id="snapshotNote" name="note" type="text" maxlength="80" placeholder="bv. Loon net gestort">
+            <span>Status rekening aan het begin van die maand</span>
+            <input id="balanceInput" name="balance" type="number" step="0.01" placeholder="bv. 1800" required>
           </label>
-          <button type="submit" class="button button--primary">Status bewaren</button>
+          <button type="submit" class="button button--primary">Maand opslaan</button>
         </form>
 
         <div class="panel__header panel__header--sub">
-          <h3>Uitgave toevoegen</h3>
-          <p>Hou je maand levend door elke kost snel in te geven.</p>
+          <h3>Verrichting toevoegen</h3>
+          <p>Voeg per maand al je inkomsten en uitgaven toe met naam, categorie en bedrag.</p>
         </div>
 
-        <form id="expenseForm" class="stack">
+        <form id="transactionForm" class="stack">
           <label>
-            <span>Omschrijving</span>
-            <input id="expenseName" name="name" type="text" maxlength="60" placeholder="bv. Boodschappen Colruyt" required>
+            <span>Voor welke maand</span>
+            <input id="transactionMonth" name="transactionMonth" type="month" required>
+          </label>
+          <label>
+            <span>Type</span>
+            <select id="transactionType" name="type">
+              <option value="expense">Uitgave</option>
+              <option value="income">Inkomst</option>
+            </select>
           </label>
           <label>
             <span>Categorie</span>
-            <select id="expenseCategory" name="category">
+            <select id="transactionCategory" name="category">
+              <option value="Loon">Loon</option>
+              <option value="Freelance">Freelance</option>
+              <option value="Bonus">Bonus</option>
+              <option value="Terugbetaling">Terugbetaling</option>
+              <option value="Spaargeld terug">Spaargeld terug</option>
               <option value="Wonen">Wonen</option>
+              <option value="Huur of lening">Huur of lening</option>
+              <option value="Nutsvoorzieningen">Nutsvoorzieningen</option>
               <option value="Boodschappen">Boodschappen</option>
+              <option value="Restaurant">Restaurant</option>
               <option value="Vervoer">Vervoer</option>
-              <option value="Vrije tijd">Vrije tijd</option>
+              <option value="Brandstof">Brandstof</option>
+              <option value="Reis">Reis</option>
+              <option value="Shopping">Shopping</option>
               <option value="Abonnementen">Abonnementen</option>
               <option value="Gezondheid">Gezondheid</option>
+              <option value="Verzekering">Verzekering</option>
+              <option value="Ontspanning">Ontspanning</option>
+              <option value="Cadeaus">Cadeaus</option>
+              <option value="Kinderen">Kinderen</option>
+              <option value="Belastingen">Belastingen</option>
+              <option value="Sparen">Sparen</option>
+              <option value="Onderwijs">Onderwijs</option>
+              <option value="Huisdieren">Huisdieren</option>
               <option value="Overig">Overig</option>
             </select>
           </label>
           <label>
+            <span>Omschrijving</span>
+            <input id="transactionName" name="name" type="text" maxlength="80" placeholder="bv. Reis New York" required>
+          </label>
+          <label>
             <span>Bedrag</span>
-            <input id="expenseAmount" name="amount" type="number" min="0" step="0.01" placeholder="bv. 54.90" required>
+            <input id="transactionAmount" name="amount" type="number" min="0" step="0.01" placeholder="bv. 500" required>
           </label>
           <label>
             <span>Datum</span>
-            <input id="expenseDate" name="date" type="date" required>
+            <input id="transactionDate" name="date" type="date" required>
           </label>
-          <button type="submit" class="button button--primary">Uitgave opslaan</button>
+          <button type="submit" class="button button--primary">Verrichting opslaan</button>
         </form>
       </section>
 
       <section class="panel panel--results">
         <div class="panel__header">
-          <h2>Overzicht</h2>
-          <p>Een heldere kijk op je maandelijkse geldstroom.</p>
+          <h2>Dashboard van je maand</h2>
+          <p>Hier zie je in een oogopslag hoe je maand, rekening en spaarruimte evolueren.</p>
         </div>
 
-        <div class="summary-grid">
-          <article class="summary-card">
-            <p>Totaal uitgegeven</p>
-            <strong id="totalSpent">EUR 0</strong>
+        <div class="summary-grid summary-grid--wide">
+          <article class="summary-card summary-card--highlight">
+            <p>Loon opgeslagen</p>
+            <strong id="savedSalary">EUR 0</strong>
           </article>
           <article class="summary-card">
-            <p>Geschat gespaard</p>
-            <strong id="estimatedSaved">EUR 0</strong>
+            <p>Start rekening</p>
+            <strong id="startingBalance">EUR 0</strong>
           </article>
           <article class="summary-card">
-            <p>Vrij besteedbaar</p>
-            <strong id="remainingBudget">EUR 0</strong>
+            <p>Totaal inkomsten</p>
+            <strong id="totalIncome">EUR 0</strong>
           </article>
           <article class="summary-card">
-            <p>Status rekening</p>
-            <strong id="balanceStatus">EUR 0</strong>
+            <p>Totaal uitgaven</p>
+            <strong id="totalExpenses">EUR 0</strong>
+          </article>
+          <article class="summary-card">
+            <p>Wat je overhoudt</p>
+            <strong id="netResult">EUR 0</strong>
+          </article>
+          <article class="summary-card summary-card--highlight-alt">
+            <p>Eindstand rekening</p>
+            <strong id="endingBalance">EUR 0</strong>
           </article>
         </div>
 
         <div class="insights">
           <article class="insight-card">
-            <h3>Maandscore</h3>
-            <p id="monthlyHealth">Voer je gegevens in om je budgetgezondheid te zien.</p>
+            <h3>Status van de maand</h3>
+            <p id="monthlyHealth">Kies of bewaar eerst een maand om je overzicht te zien.</p>
           </article>
           <article class="insight-card">
-            <h3>Beste suggestie</h3>
-            <p id="topSuggestion">Nog geen suggestie. Voeg eerst je loon en een paar uitgaven toe.</p>
+            <h3>Beste tip</h3>
+            <p id="topSuggestion">Nog geen tip. Sla eerst een maand en enkele verrichtingen op.</p>
+          </article>
+        </div>
+
+        <div class="chart-grid">
+          <article class="chart-card">
+            <div class="panel__header">
+              <h3>Rekeningstand per maand</h3>
+              <p>Volg mooi hoe je eindstand van maand tot maand stijgt of daalt.</p>
+            </div>
+            <div id="balanceTrendChart" class="chart-surface empty-state">
+              Nog geen maanden beschikbaar voor de grafiek.
+            </div>
+          </article>
+
+          <article class="chart-card">
+            <div class="panel__header">
+              <h3>Uitgaven en sparen per maand</h3>
+              <p>Vergelijk per maand wat er afgaat en wat je overhoudt.</p>
+            </div>
+            <div id="cashflowChart" class="chart-surface empty-state">
+              Nog geen maanddata beschikbaar voor de grafiek.
+            </div>
           </article>
         </div>
 
         <div class="panel__header panel__header--sub">
-          <h3>Uitgavenlijst</h3>
-          <p>Je recentste kosten verschijnen bovenaan.</p>
+          <h3>Alle verrichtingen van deze maand</h3>
+          <p>Een duidelijke lijst met al je inkomsten en uitgaven in de actieve maand.</p>
         </div>
 
-        <div id="expenseList" class="expense-list empty-state">
-          Nog geen uitgaven toegevoegd.
+        <div id="transactionList" class="expense-list empty-state">
+          Nog geen verrichtingen in deze maand.
         </div>
 
         <div class="panel__header panel__header--sub">
-          <h3>Categorieverdeling</h3>
-          <p>Zo zie je meteen waar je geld het hardst wegloopt.</p>
+          <h3>Verdeling van je uitgaven</h3>
+          <p>Zo zie je direct waar het meeste geld naartoe gaat.</p>
         </div>
 
         <div id="categoryBreakdown" class="category-breakdown empty-state">
-          Nog geen categoriegegevens beschikbaar.
+          Nog geen uitgaven om te verdelen.
         </div>
 
         <div class="panel__header panel__header--sub">
-          <h3>Maandhistoriek rekening</h3>
-          <p>Per maand zie je je startsaldo, totale kosten en berekende eindstand.</p>
+          <h3>Opgeslagen maanden</h3>
+          <p>Klik op een maandkaart om snel terug te schakelen naar die periode.</p>
         </div>
 
-        <div id="snapshotList" class="expense-list empty-state">
-          Nog geen maandelijkse rekeningstatus opgeslagen.
+        <div id="monthList" class="month-list empty-state">
+          Nog geen maanden opgeslagen.
         </div>
       </section>
     </main>
   </div>
 
-  <template id="expenseItemTemplate">
+  <template id="transactionItemTemplate">
     <article class="expense-item">
       <div>
-        <strong class="expense-item__name"></strong>
-        <p class="expense-item__meta"></p>
+        <strong class="transaction-item__name"></strong>
+        <p class="transaction-item__meta"></p>
       </div>
       <div class="expense-item__side">
-        <span class="expense-item__amount"></span>
-        <button type="button" class="button button--ghost expense-item__delete">Verwijder</button>
+        <span class="transaction-item__amount"></span>
+        <button type="button" class="button button--ghost transaction-item__delete">Verwijder</button>
       </div>
     </article>
   </template>
 
-  <template id="snapshotItemTemplate">
-    <article class="expense-item">
+  <template id="monthItemTemplate">
+    <button type="button" class="month-card">
       <div>
-        <strong class="snapshot-item__month"></strong>
-        <p class="snapshot-item__meta"></p>
+        <strong class="month-item__name"></strong>
+        <p class="month-item__meta"></p>
       </div>
-      <div class="expense-item__side">
-        <span class="snapshot-item__amount"></span>
-        <button type="button" class="button button--ghost snapshot-item__delete">Verwijder</button>
+      <div class="month-card__side">
+        <span class="month-item__amount"></span>
+        <small class="month-item__label">eindstand</small>
       </div>
-    </article>
+    </button>
   </template>
 
   <script src="app.js"></script>
